@@ -1,0 +1,12 @@
+{
+  "2025-08-11": {
+    "this is crazy": {
+      "tone_distribution": {
+        "anxious-enthusiastic": 1
+      },
+      "avg_intensity": 8.0,
+      "complexity_score": 2.0,
+      "chunk_count": 1
+    }
+  }
+}

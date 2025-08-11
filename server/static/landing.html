@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tone Engine – Your Authentic Voice</title>
+  <style>
+    :root { --fg:#0f1226; --muted:#6b7280; --accent:#6c5ce7; --accent2:#a855f7; --bg:#0b1021; }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; color:var(--fg);
+      background:linear-gradient(135deg, #0b1021 0%, #0f1226 40%, #141a34 100%);
+      background-size:200% 200%;
+      animation:bgShift 30s ease infinite;
+    }
+    a{color:inherit; text-decoration:none}
+    .container{max-width:1120px; margin:0 auto; padding:28px}
+    .nav{display:flex; align-items:center; justify-content:space-between; padding:16px 0}
+    .nav .brand{font-weight:800; color:#fff}
+    .btn{display:inline-block; padding:12px 16px; border-radius:12px; font-weight:600; border:1px solid rgba(255,255,255,.15); background:linear-gradient(135deg, #2b2f55, #22274a); color:#fff; transition:transform .18s ease, box-shadow .18s ease, opacity .2s ease}
+    .btn:hover, .btn:focus{transform:translateY(-1px); box-shadow:0 10px 18px rgba(0,0,0,.25)}
+    .btn.primary{background:linear-gradient(135deg, var(--accent), var(--accent2)); border:none}
+    .hero{padding:88px 0 72px; color:#fff}
+    .hero-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:32px; align-items:center}
+    .hero h1{font-size:48px; line-height:1.1; margin:0 0 12px; opacity:0; transform:translateY(12px); animation:fadeUp .8s ease .05s forwards}
+    .hero p.lead{font-size:18px; color:#c7c9d3; max-width:800px; opacity:0; transform:translateY(12px); animation:fadeUp .8s ease .15s forwards}
+    .cta-row{display:flex; gap:12px; margin-top:24px; opacity:0; transform:translateY(12px); animation:fadeUp .8s ease .25s forwards}
+    .hero-visual{position:relative; opacity:0; transform:translateY(12px); animation:fadeUp .8s ease .2s forwards}
+    .hero-visual .glow{position:absolute; inset:-10%; filter:blur(40px); opacity:.6; background:radial-gradient(600px 400px at 60% 40%, rgba(108,92,231,.35), transparent 60%), radial-gradient(400px 300px at 20% 70%, rgba(168,85,247,.28), transparent 60%)}
+    .mock{position:relative; border-radius:16px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); padding:16px; box-shadow:0 20px 60px rgba(0,0,0,.35)}
+    .mock .toolbar{display:flex; gap:8px; margin-bottom:12px}
+    .dot{width:10px; height:10px; border-radius:50%; background:#ff6b6b}
+    .dot.yellow{background:#f7b731}
+    .dot.green{background:#20bf6b}
+    .mock-grid{display:grid; grid-template-columns:1fr; gap:12px}
+    .panel{background:#0f1533; border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:12px}
+    .line{height:10px; border-radius:6px; background:linear-gradient(90deg, #5f66c7, #8b5cf6)}
+    .line.thin{height:8px; opacity:.9}
+    .bubble{display:flex; gap:10px; align-items:flex-start}
+    .avatar{width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg, #8b5cf6, #6c5ce7)}
+    .lines{flex:1; display:grid; gap:6px}
+    .badge-row{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+    .badge{padding:6px 10px; border-radius:999px; font-size:12px; color:#fff; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12)}
+    .section{background:#fff; border-radius:18px; padding:36px; margin:28px 0; box-shadow:0 1px 0 rgba(17,24,39,.04), 0 8px 24px rgba(17,24,39,.06)}
+    h2{margin-top:0}
+    .grid{display:grid; gap:16px}
+    .grid.two{grid-template-columns:repeat(2,1fr)}
+    .card{border:1px solid #edf0f5; border-radius:14px; padding:18px; background:#fff; transition:transform .18s ease, box-shadow .18s ease}
+    .card:hover{transform:translateY(-3px); box-shadow:0 14px 28px rgba(17,24,39,.08)}
+    .muted{color:var(--muted)}
+    .example{display:grid; gap:12px; grid-template-columns:1fr 1fr}
+    .code{background:#0b1021; color:#e5e7eb; padding:16px; border-radius:12px; min-height:120px; white-space:pre-wrap}
+    .with-icon{display:flex; gap:12px; align-items:flex-start}
+    .icon{width:22px; height:22px; flex:0 0 22px; color:#6c5ce7}
+    .footer{color:#c7c9d3; padding:36px 0; text-align:center}
+
+    /* Reveal on scroll */
+    .reveal{opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s ease}
+    .reveal.visible{opacity:1; transform:none}
+
+    @media (max-width:900px){ .grid.two, .example{grid-template-columns:1fr} .hero h1{font-size:36px} .hero-grid{grid-template-columns:1fr} }
+    @media (prefers-reduced-motion: reduce){
+      *{animation:none !important; transition:none !important}
+    }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:none } }
+    @keyframes bgShift { 0%{ background-position:0% 50% } 50%{ background-position:100% 50% } 100%{ background-position:0% 50% } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <div class="brand">Tone Engine</div>
+      <div>
+        <a class="btn" href="/app/">Open App</a>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <h1>Stop Spending Hours Making AI Sound Like You</h1>
+          <!-- Updated hero copy to text-based workflow -->
+          <p class="lead">Finally, an AI writing tool that captures your authentic voice — without sounding generic. Upload a short writing sample or paste text. We analyze your style and keep it consistent across everything you create.</p>
+          <div class="badge-row">
+            <span class="badge">Faster editing</span>
+            <span class="badge">Authentic tone</span>
+            <span class="badge">Consistent output</span>
+          </div>
+          <div class="cta-row">
+            <!-- Updated CTA label -->
+            <a class="btn primary" href="/app/">Upload Writing Sample</a>
+            <a class="btn" href="#how">See How It Works</a>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="glow" aria-hidden="true"></div>
+          <div class="mock">
+            <div class="toolbar"><span class="dot"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+            <div class="mock-grid">
+              <div class="panel">
+                <div class="bubble">
+                  <div class="avatar"></div>
+                  <div class="lines">
+                    <div class="line" style="width:75%"></div>
+                    <div class="line thin" style="width:55%"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="line" style="width:86%; margin-bottom:8px"></div>
+                <div class="line thin" style="width:64%; margin-bottom:6px"></div>
+                <div class="line thin" style="width:72%"></div>
+              </div>
+              <div class="panel">
+                <div class="bubble">
+                  <div class="avatar" style="background:linear-gradient(135deg,#20bf6b,#6c5ce7)"></div>
+                  <div class="lines">
+                    <div class="line" style="width:68%"></div>
+                    <div class="line thin" style="width:40%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <h2>The Problem Every Professional Faces</h2>
+      <p class="muted"><em>"I feed ChatGPT examples of my writing, but it still sounds like a robot wrote it."</em><br/>
+      <em>"My AI-generated emails sound professional, but they don't sound like ME."</em><br/>
+      <em>"I spend more time editing AI output than I would just writing it myself."</em></p>
+      <p><strong>The truth is:</strong> Current AI tools make everyone sound the same. Professional, but generic. Polished, but personality‑free. Your authentic voice is your competitive advantage — and generic AI erases it.</p>
+    </section>
+
+    <section class="section reveal" id="how">
+      <h2>What If AI Could Actually Write Like You?</h2>
+      <div class="grid two">
+        <!-- Step 1 updated to text-based input -->
+        <div class="card reveal with-icon">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 8h18"/><path d="M7 12h6"/></svg>
+          <div>
+            <strong>Step 1: Upload a writing sample (or paste text)</strong>
+            <p class="muted">Post, email, doc — anything you've written in your natural style.</p>
+          </div>
+        </div>
+        <!-- Step 2 renamed to style patterns -->
+        <div class="card reveal with-icon">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v3"/><path d="M12 18v3"/><path d="M3 12h3"/><path d="M18 12h3"/><circle cx="12" cy="12" r="4"/></svg>
+          <div>
+            <strong>Step 2: AI learns your style patterns</strong>
+            <p class="muted">Sentence structure, vocabulary choices, rhythm, and flow.</p>
+          </div>
+        </div>
+        <!-- Step 3 clarifies rephrase and generation -->
+        <div class="card reveal with-icon">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M16 3h5v5"/><path d="M8 21H3v-5"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>
+          <div>
+            <strong>Step 3: Rephrase or generate content in your voice</strong>
+            <p class="muted">Turn any draft into your style or create new content that matches it.</p>
+          </div>
+        </div>
+      </div>
+      <div class="cta-row"><a class="btn primary" href="/app/">Start Building Your Profile</a></div>
+    </section>
+
+    <section class="section reveal">
+      <h2>See The Difference</h2>
+      <div class="example">
+        <div>
+          <div class="muted">Generic AI Output</div>
+          <div class="code">"Productivity is important for business success. Here are some strategies to improve your workflow and achieve better results in your professional endeavors."</div>
+        </div>
+        <div>
+          <div class="muted">Your Authentic Voice</div>
+          <div class="code">"Look, productivity isn't about cramming more into your day — it's about figuring out which three things actually move the needle, and having the discipline to ignore everything else that feels urgent but isn't."</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <h2>Perfect For</h2>
+      <div class="grid two">
+        <div class="card reveal with-icon">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7h18"/><path d="M6 3h12v4H6z"/><rect x="3" y="7" width="18" height="14" rx="2"/></svg>
+          <div><strong>Consultants & Coaches</strong><p class="muted">Client emails that sound like your actual advice.</p></div>
+        </div>
+        <div class="card reveal with-icon">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="7" r="3"/><path d="M5.5 21a6.5 6.5 0 0 1 13 0"/></svg>
+          <div><strong>Executives & Leaders</strong><p class="muted">Team comms that reflect your leadership style.</p></div>
+        </div>
+        <div class="card reveal with-icon">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 8h18"/></svg>
+          <div><strong>Content Creators</strong><p class="muted">Scale output without losing the voice that built your audience.</p></div>
+        </div>
+        <div class="card reveal with-icon">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+          <div><strong>Sales Professionals</strong><p class="muted">Outreach that feels like real relationship‑building.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <h2>Built for Professionals Who Demand Quality</h2>
+      <ul>
+        <!-- Voice DNA -> Style DNA -->
+        <li><strong>Style DNA Analysis:</strong> patterns, sentence flow, and rhythm</li>
+        <li><strong>Context‑Aware Generation:</strong> adapts to email, LinkedIn, articles, presentations</li>
+        <li><strong>Continuous Learning:</strong> your profile improves with each sample</li>
+        <li><strong>Privacy First:</strong> your data stays private and never trains other users’ models</li>
+      </ul>
+    </section>
+
+    <section class="section reveal" id="cta">
+      <h2>Ready to Get Consistent, Authentic Output?</h2>
+      <!-- CTA paragraph updated to writing sample -->
+      <p>Upload a short writing sample in your natural style. See content rephrased and generated in your voice — without the generic AI tone.</p>
+      <div class="cta-row"><a class="btn primary" href="/app/">Start Building Your Profile</a></div>
+      <p class="muted">No credit card required. Takes 2 minutes.</p>
+    </section>
+
+    <section class="section">
+      <h2>Common Questions</h2>
+      <!-- FAQ updated to text-based inputs -->
+      <details class="card"><summary><strong>What kind of writing sample should I upload?</strong></summary><p>Any text written by you — emails, posts, articles, docs. Paste or upload as .txt.</p></details>
+      <details class="card"><summary><strong>How much text do you need?</strong></summary><p>As little as 300–500 words to start. More examples → better consistency.</p></details>
+      <details class="card"><summary><strong>Does it work for different types of content?</strong></summary><p>Yes. The system adapts your style for emails, social posts, articles, and more.</p></details>
+      <details class="card"><summary><strong>How is this different from other AI tools?</strong></summary><p>We build a profile of <em>your</em> style patterns and apply it consistently — not a generic tone preset.</p></details>
+      <details class="card"><summary><strong>Is my data secure?</strong></summary><p>Your style profile is private to your account and never used to train other users’ models.</p></details>
+    </section>
+
+    <footer class="footer">© Tone Engine</footer>
+  </div>
+  <script>
+    // Reveal on scroll
+    (function(){
+      const els = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        els.forEach(el => el.classList.add('visible'));
+        return;
+      }
+      const io = new IntersectionObserver((entries, obs) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            obs.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      els.forEach(el => io.observe(el));
+    })();
+  </script>
+</body>
+</html>
