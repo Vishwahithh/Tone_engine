@@ -4,23 +4,56 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Tone Engine</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root { --fg:#0f1226; --muted:#6b7280; --accent:#6c5ce7; --accent2:#a855f7; }
-    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 24px; max-width: 1080px; color: var(--fg); }
+    :root {
+      --fg:#e6e7ef; --muted:#b3b7c9; --accent:#6c5ce7; --accent2:#a855f7; --bg1:#0b1021; --bg2:#0f1226; --bg3:#141a34;
+      --ctl-pad-y: 12px; --ctl-pad-x: 16px; --ctl-radius: 12px; --ctl-height: 50px; --ctl-font: 16px; --ctl-line: 1.55;
+    }
+    * { box-sizing: border-box }
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; color: var(--fg); }
     h1 { margin-bottom: 4px; }
     p.lead { color: var(--muted); margin-top: 0; margin-bottom: 16px; }
-    .row { display: flex; gap: 24px; align-items: stretch; }
-    .card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px; flex: 1; transition: transform .18s ease, box-shadow .18s ease; background: #fff; }
-    .card:hover { transform: translateY(-3px); box-shadow: 0 14px 28px rgba(17,24,39,.08); }
-    label { display: block; margin-top: 10px; font-weight: 600; }
-    input, select, textarea, button { width: 100%; padding: 10px 12px; margin-top: 6px; border-radius: 10px; border: 1px solid #e5e7eb; }
-    button { background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; color: #fff; font-weight: 600; cursor: pointer; transition: transform .18s ease, box-shadow .18s ease; }
-    button:hover { transform: translateY(-1px); box-shadow: 0 10px 18px rgba(17,24,39,.12); }
-    textarea { height: 160px; }
-    pre { background: #0b1021; color: #e5e7eb; padding: 12px; border-radius: 10px; overflow: auto; }
-    .row-narrow { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; align-items: end; }
+    .row { display: flex; gap: 28px; align-items: stretch; }
+    .card { border: 1px solid rgba(255,255,255,.14); border-radius: 16px; padding: 24px; flex: 1; transition: transform .2s ease, box-shadow .2s ease; background: rgba(255,255,255,.06); backdrop-filter: blur(10px); }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 22px 40px rgba(0,0,0,.28); }
+    label { display: block; margin-top: 12px; font-weight: 600; }
+    /* Uniform controls across the app */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"],
+    input[type="number"],
+    input[type="url"],
+    input:not([type]),
+    select,
+    textarea {
+      width: 100%;
+      padding: var(--ctl-pad-y) var(--ctl-pad-x);
+      margin-top: 10px;
+      border-radius: var(--ctl-radius);
+      border: 1.2px solid rgba(255,255,255,.16);
+      background: rgba(15,21,51,.60);
+      color: var(--fg);
+      font-size: var(--ctl-font);
+      line-height: var(--ctl-line);
+      min-height: var(--ctl-height);
+    }
+    input[type="file"] {
+      padding: 8px var(--ctl-pad-x);
+      min-height: calc(var(--ctl-height) - 6px);
+      color-scheme: dark;
+    }
+    textarea { min-height: 240px; resize: vertical; }
+    input::placeholder, textarea::placeholder { color: #a5aecb; font-size: 15px; opacity: .9; }
+    button { width: 100%; padding: 12px 16px; margin-top: 12px; border-radius: 12px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; color: #fff; font-weight: 700; cursor: pointer; transition: transform .2s ease, box-shadow .2s ease; }
+    button:hover { transform: translateY(-1px); box-shadow: 0 18px 34px rgba(108,92,231,.35); }
+    textarea { min-height: 220px; resize: vertical; }
+    #inputText, #gPrompt { min-height: 260px; }
+    #outputText, #gOut { min-height: 260px; }
+    pre { background: rgba(11,16,33,.8); color: #e5e7eb; padding: 16px; border-radius: 12px; overflow: auto; border:1px solid rgba(255,255,255,.08) }
+    .row-narrow { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 18px; align-items: end; }
 
-    /* Subtle fade-in */
     .reveal { opacity: 0; transform: translateY(8px); transition: opacity .45s ease, transform .45s ease; }
     .reveal.visible { opacity: 1; transform: none; }
 
@@ -29,10 +62,33 @@
   </style>
 </head>
 <body>
-  <h1 class="reveal">Tone Engine</h1>
-  <p class="lead reveal">Upload transcript(s) to build a voice profile, then rephrase text in that voice.</p>
+  <div class="min-h-screen relative" style="background: radial-gradient(800px 400px at 20% 10%, rgba(108,92,231,.25), transparent 60%), radial-gradient(600px 300px at 80% 20%, rgba(168,85,247,.20), transparent 60%), linear-gradient(135deg, var(--bg1), var(--bg2) 40%, var(--bg3));">
+    <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(1100px 700px at 60% 40%, rgba(255,255,255,.04), transparent 60%);"></div>
+    <aside class="hidden md:block fixed top-0 left-0 h-full w-64 border-r border-white/10 px-5 py-8" style="background: rgba(15,18,38,.55); backdrop-filter: blur(10px);">
+      <div class="flex items-center gap-2 mb-7">
+        <div class="w-8 h-8 rounded-md" style="background: linear-gradient(135deg, var(--accent), var(--accent2))"></div>
+        <div class="font-extrabold text-lg tracking-tight text-white">Tone Engine</div>
+      </div>
+      <nav class="grid gap-2 text-sm">
+        <button id="nav-generate" class="px-3 py-2 rounded-md text-left font-semibold text-white" style="background: linear-gradient(135deg, rgba(108,92,231,.85), rgba(168,85,247,.85));">Generate</button>
+        <button id="nav-insights" class="px-3 py-2 rounded-md text-left font-semibold text-white/90 hover:bg-white/10">Insights</button>
+      </nav>
+      <div class="mt-8 text-xs text-white/70">
+        <div class="mb-2 font-semibold">Theme</div>
+        <div class="grid gap-2">
+          <div class="h-8 rounded-md border border-white/10" style="background: linear-gradient(135deg, #2b2f55, #22274a)"></div>
+          <div class="h-8 rounded-md border border-white/10" style="background: linear-gradient(135deg, #6c5ce7, #a855f7)"></div>
+        </div>
+      </div>
+    </aside>
+    <div class="md:ml-64">
+  <div class="px-6 py-8">
+    <div class="reveal">
+      <div class="text-3xl font-extrabold tracking-tight text-white">Tone Engine</div>
+      <p class="lead mt-1">Upload transcript(s) to build a voice profile, then rephrase text in that voice.</p>
+    </div>
 
-  <div class="card reveal">
+  <div class="card reveal mt-4" data-panel="generate">
     <h3>Identify yourself</h3>
     <div class="row-narrow">
       <div>
@@ -50,15 +106,15 @@
     <small id="ensureMsg"></small>
   </div>
 
-  <div class="row" style="margin-top:24px;">
-    <div class="card reveal">
+  <div class="row mt-4" data-panel="generate">
+    <div class="card reveal" >
       <h3>1) Upload transcript</h3>
-      <input type="file" id="file" accept=".txt" />
+      <input type="file" id="file" accept=".txt,.pdf,.docx" multiple />
       <button id="uploadBtn">Process Transcript</button>
       <pre id="uploadOut"></pre>
     </div>
 
-    <div class="card reveal">
+    <div class="card reveal" >
       <h3>2) Rephrase in tone</h3>
       <label for="inputText">Input text</label>
       <textarea id="inputText" placeholder="Paste text to rephrase..."></textarea>
@@ -68,13 +124,44 @@
     </div>
   </div>
 
-  <div class="card reveal" style="margin-top:24px;">
+  <div class="card reveal mt-4" data-panel="generate">
     <h3>Profile (JSON)</h3>
     <button id="loadProfile">Load Profile</button>
     <pre id="profileJson"></pre>
   </div>
 
-  <div class="card reveal" style="margin-top:24px;">
+  <div class="card reveal mt-4" data-panel="insights">
+    <h3>Insights</h3>
+    <div class="row-narrow" style="grid-template-columns: 1fr 1fr 1fr;">
+      <div>
+        <label>Days (trends)</label>
+        <input id="insDays" type="number" min="3" max="90" value="30" />
+      </div>
+      <div>
+        <label>Context</label>
+        <input id="insContext" placeholder="default" />
+      </div>
+      <div>
+        <button id="loadInsights">Load Insights</button>
+      </div>
+    </div>
+    <div style="margin-top:12px; display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+      <div>
+        <h4>Recommendations</h4>
+        <pre id="insRecs"></pre>
+      </div>
+      <div>
+        <h4>Trends</h4>
+        <pre id="insTrends"></pre>
+      </div>
+    </div>
+    <div style="margin-top:12px;">
+      <h4>Evolution Plot</h4>
+      <img id="insPlot" alt="evolution plot" style="max-width:100%; border:1px solid #e5e7eb; border-radius:10px;"/>
+    </div>
+  </div>
+
+  <div class="card reveal mt-4" data-panel="generate">
     <h3>4) Generate with Brief</h3>
     <div class="row-narrow" style="grid-template-columns: 1fr 1fr 1fr 1fr 1fr;">
       <div>
@@ -238,10 +325,60 @@
     document.getElementById('loadProfile').onclick = loadProfile;
     document.getElementById('gBtn').onclick = generateWithBrief;
 
+    // Panel toggling (Generate vs Insights)
+    function setPanel(name){
+      const gens = document.querySelectorAll('[data-panel="generate"]');
+      const ins = document.querySelectorAll('[data-panel="insights"]');
+      gens.forEach(el=> el.style.display = (name === 'generate') ? '' : 'none');
+      ins.forEach(el=> el.style.display = (name === 'insights') ? '' : 'none');
+      const gbtn = document.getElementById('nav-generate');
+      const ibtn = document.getElementById('nav-insights');
+      if (gbtn && ibtn){
+        if (name === 'generate'){
+          gbtn.className = 'px-3 py-2 rounded-md text-left font-semibold bg-slate-900 text-white';
+          ibtn.className = 'px-3 py-2 rounded-md text-left font-semibold hover:bg-slate-100';
+        } else {
+          ibtn.className = 'px-3 py-2 rounded-md text-left font-semibold bg-slate-900 text-white';
+          gbtn.className = 'px-3 py-2 rounded-md text-left font-semibold hover:bg-slate-100';
+        }
+      }
+    }
+    const gbtnEl = document.getElementById('nav-generate');
+    const ibtnEl = document.getElementById('nav-insights');
+    if (gbtnEl) gbtnEl.onclick = ()=> setPanel('generate');
+    if (ibtnEl) ibtnEl.onclick = ()=> setPanel('insights');
+    setPanel('generate');
+
+    async function loadInsights(){
+      const c = clientSel.value || 'default';
+      const days = parseInt(document.getElementById('insDays').value || '30', 10);
+      const context = (document.getElementById('insContext').value || 'default');
+      // recommendations
+      try{
+        const recsRes = await fetch(`/api/recommendations?client=${encodeURIComponent(c)}`);
+        const recs = await recsRes.json();
+        document.getElementById('insRecs').textContent = JSON.stringify(recs, null, 2);
+      } catch(e) { document.getElementById('insRecs').textContent = String(e); }
+      // trends
+      try{
+        const trRes = await fetch(`/api/trends?client=${encodeURIComponent(c)}&days=${days}`);
+        const tr = await trRes.json();
+        document.getElementById('insTrends').textContent = JSON.stringify(tr, null, 2);
+      } catch(e) { document.getElementById('insTrends').textContent = String(e); }
+      // plot image
+      try{
+        const plotUrl = `/api/evolutionPlot?client=${encodeURIComponent(c)}&days=${days}&context=${encodeURIComponent(context)}`;
+        document.getElementById('insPlot').src = plotUrl + `&t=${Date.now()}`; // bust cache
+      } catch(e) { /* ignore */ }
+    }
+    document.getElementById('loadInsights').onclick = loadInsights;
+
     // Init
     const savedEmail = load('email');
     if (savedEmail) document.getElementById('email').value = savedEmail;
     loadClients(savedEmail);
   </script>
+    </div>
+  </div>
 </body>
 </html>

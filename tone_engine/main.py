@@ -375,9 +375,77 @@ class ToneEngine:
             return f"Error generating content: {e}"
     
     def rephrase_in_my_tone(self, text: str) -> str:
-        """Rephrase the given text in your own tone using your tone profile."""
-        prompt = f"Rewrite this in my voice: {text}"
-        return self.generate_with_tone(prompt)
+        """Rephrase the given text in your own tone using your tone profile.
+        Produces a concise rewrite that preserves meaning, avoids filler,
+        and stays close to the original length.
+        """
+        # Load profile (same logic as generate_with_tone)
+        profile = None
+        if self.tone_profile_path.exists():
+            with open(self.tone_profile_path, 'r', encoding='utf-8') as f:
+                profile = json.load(f)
+        else:
+            if self.client_id and self.db and getattr(self.db, 'enabled')():
+                try:
+                    res = self.db.client.table("tone_profiles").select("profile").eq("client_id", self.client_id).single().execute()
+                    if res.data and res.data.get("profile"):
+                        profile = res.data["profile"]
+                        with open(self.tone_profile_path, 'w', encoding='utf-8') as f:
+                            json.dump(profile, f, indent=2, ensure_ascii=False)
+                except Exception:
+                    pass
+
+        if not profile:
+            # Fall back to a minimal, safe return if no profile is present
+            return text
+
+        if not self.anthropic_client:
+            return text
+
+        # Build a strict rephrase instruction using the profile
+        exemplars = "\n".join([ex.get('sample_text', '') for ex in profile.get('recent_examples', [])[-3:]])
+        voice_summary = f"""
+Primary Tone: {profile.get('dominant_traits', {}).get('primary_tone', 'conversational')}
+Top Style Patterns: {', '.join(profile.get('dominant_traits', {}).get('top_style_patterns', []))}
+Recent Exemplars:
+{exemplars}
+"""
+
+        # Target token/length bounds (heuristic)
+        words = text.split()
+        approx_tokens = max(60, min(400, int(len(words) * 1.5) or 60))
+
+        prompt = f"""
+You are a precise style-preserving rewriter.
+
+VOICE PROFILE
+{voice_summary}
+
+TASK
+Rewrite the INPUT in the client's own voice.
+
+Constraints:
+- Preserve exact meaning and intent. Do NOT add new facts, small talk, or explanations.
+- Keep length within ±20% of the input length.
+- Avoid filler and hedging. Prefer clear, direct sentences.
+- Maintain the same level of formality.
+- Output only the rewritten text. No quotes, no preface.
+
+INPUT
+{text}
+"""
+
+        try:
+            response = self.anthropic_client.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=approx_tokens,
+                temperature=0.15,
+                system="You are a precise, faithful editor that rewrites text in the user's own voice without adding content.",
+                messages=[{"role": "user", "content": prompt}],
+            )
+            return response.content[0].text
+        except Exception as e:
+            return f"Error rephrasing: {e}"
     
     def get_tone_summary(self) -> str:
         """Get a summary of your current tone profile"""

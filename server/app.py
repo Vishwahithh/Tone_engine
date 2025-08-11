@@ -17,7 +17,7 @@ load_dotenv()
 import sys
 ROOT_DIR = Path(__file__).resolve().parents[1]
 sys.path.append(str(ROOT_DIR / "tone_engine"))
-from main import ToneEngine  # type: ignore
+from advanced_main import AdvancedToneEngine as ToneEngine  # type: ignore
 
 # Optional DB helper to list clients if available
 try:
@@ -239,6 +239,11 @@ def process_transcript(client: str = Form("default"), file: UploadFile = File(..
     try:
         chunks = engine.process_transcript(file.filename)
         profile = engine.update_tone_profile(chunks)
+        # Record evolution so trends/plot work
+        try:
+            engine.track_voice_evolution(chunks, context="default")
+        except Exception:
+            pass
         return {
             "chunks": len(chunks),
             "profile_total_chunks": profile.get("total_chunks", 0),
@@ -303,6 +308,49 @@ def generate_with_brief(req: GenerateBriefRequest):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+# Advanced insights endpoints
+@app.get("/api/evolutionData")
+def get_evolution_data(client: str = "default"):
+    engine = get_engine(client)
+    import json
+    evo_path = engine.profiles_dir / "voice_evolution.json"
+    if not evo_path.exists():
+        return {"evolution": {}}
+    with open(evo_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return {"evolution": data}
+
+
+@app.get("/api/evolutionPlot")
+def get_evolution_plot(client: str = "default", days: int = 30, context: str = "default"):
+    engine = get_engine(client)
+    try:
+        engine.plot_voice_evolution(days=days, context=context)
+    except Exception as e:
+        # plotting might fail if matplotlib is missing
+        raise HTTPException(status_code=400, detail=str(e))
+    plot_file = engine.profiles_dir / f"voice_evolution_{context}.png"
+    if not plot_file.exists():
+        raise HTTPException(status_code=404, detail="Plot not found")
+    return FileResponse(str(plot_file), media_type="image/png")
+
+
+@app.get("/api/trends")
+def get_trends(client: str = "default", days: int = 7):
+    engine = get_engine(client)
+    try:
+        return engine.analyze_tone_trends(days=days)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/recommendations")
+def get_recommendations(client: str = "default"):
+    engine = get_engine(client)
+    try:
+        return {"recommendations": engine.get_voice_recommendations()}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 # Serve static frontend under /app
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 STATIC_DIR.mkdir(parents=True, exist_ok=True)
